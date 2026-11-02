@@ -85,6 +85,26 @@ Next.js 개발 서버는 폴더당 하나만 뜰 수 있으므로, 앱을 끈 �
 - 배운 것: 앞뒤 공백을 제거한 뒤 1~500자
 - 노트: 0~10,000자, 공백과 줄바꿈은 입력한 그대로 저장
 
+## Docker로 실행
+
+```sh
+cp .env.example .env   # DB_USER, DB_PASSWORD, DB_NAME을 채웁니다.
+docker compose up -d --build
+```
+
+http://127.0.0.1:8090 을 엽니다. 포트는 `.env`의 `DOCKER_WEB_PORT`로 바꿀 수 있습니다.
+
+| 서비스 | 이미지 | 외부 공개 |
+| --- | --- | --- |
+| `web` | `web/Dockerfile` (정적 빌드 + Nginx) | `127.0.0.1:8090` |
+| `api` | `api/Dockerfile` (시작할 때 마이그레이션 적용) | 없음 |
+| `db` | 공식 `postgres:18-alpine`, 데이터는 볼륨 `db-data` | 없음 |
+
+- 웹 컨테이너는 API까지만, DB는 API에서만 접근할 수 있도록 네트워크를 나눴습니다.
+- `.env`는 git에도 이미지에도 들어가지 않습니다. `docker compose`가 읽어 컨테이너 환경 변수로 넘깁니다.
+- `POSTGRES_PASSWORD`는 볼륨을 처음 만들 때만 적용됩니다. 이후 `.env`의 비밀번호만 바꾸면 접속할 수 없으니 DB에서도 함께 바꾸세요.
+- `docker compose down`은 데이터를 유지합니다. `-v`를 붙이면 **볼륨까지 지워 데이터가 사라집니다.**
+
 ## VM 배포 (Ubuntu)
 
 `apt`의 PostgreSQL, Nginx, Node.js를 VM에서 직접 실행합니다. 재부팅해도 세 서비스 모두 자동으로 시작됩니다.

@@ -1,7 +1,7 @@
 import { createApp } from "./app.js";
 import { createStore } from "./store.js";
 
-const HOST = "127.0.0.1";
+const HOST = process.env.API_HOST ?? "127.0.0.1"; // 컨테이너에서는 0.0.0.0으로 지정한다.
 const PORT = Number(process.env.API_PORT ?? 4000);
 const REQUIRED_DB_ENV = ["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"];
 

@@ -1,0 +1,21 @@
+# 이미지에 들어가면 안 되는 비밀 정보와 로컬 데이터
+.env
+.env.*
+!.env.example
+db/pgdata
+db/postgres.log
+
+# 이미지 안에서 다시 만드는 것들
+**/node_modules
+web/.next
+web/out
+**/*.tsbuildinfo
+
+# 실행에 필요 없는 것들
+.git
+.gitignore
+README.md
+deploy
+tests
+compose.yaml
+**/Dockerfile
