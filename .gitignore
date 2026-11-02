@@ -1,0 +1,8 @@
+node_modules/
+.next/
+web/out/
+.env
+db/pgdata/
+db/postgres.log
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,15 @@
+{
+  "name": "todo-app",
+  "private": true,
+  "type": "module",
+  "workspaces": ["api", "web"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "node scripts/run.mjs",
+    "test": "node --test --test-concurrency=1 \"tests/*.test.mjs\"",
+    "typecheck": "npm run typecheck -w web",
+    "build": "npm run build -w web",
+    "build:static": "npm run build:static -w web",
+    "migrate": "node scripts/migrate.mjs"
+  }
+}
