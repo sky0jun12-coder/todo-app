@@ -6,7 +6,9 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - http:
+    # host를 지정해 다른 이름의 요청을 가로채지 않는다. (실습은 없는 이름에 404를 기대한다)
+    - host: localhost
+      http:
         paths:
           - path: /api
             pathType: Prefix
