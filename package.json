@@ -2,8 +2,13 @@
   "name": "todo-app",
   "private": true,
   "type": "module",
-  "workspaces": ["api", "web"],
-  "engines": { "node": ">=22" },
+  "workspaces": [
+    "api",
+    "web"
+  ],
+  "engines": {
+    "node": ">=18.18"
+  },
   "scripts": {
     "dev": "node scripts/run.mjs",
     "test": "node --test --test-concurrency=1 \"tests/*.test.mjs\"",
@@ -11,5 +16,8 @@
     "build": "npm run build -w web",
     "build:static": "npm run build:static -w web",
     "migrate": "node scripts/migrate.mjs"
+  },
+  "overrides": {
+    "postcss": "^8.5.23"
   }
 }

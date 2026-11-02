@@ -8,8 +8,8 @@ Type=simple
 User=todo-api
 Group=todo-api
 WorkingDirectory=/opt/todo-app/api
-# DB 접속정보는 이 파일에만 있다. (root만 읽을 수 있고, systemd가 읽어서 넘겨 준다)
-EnvironmentFile=/etc/todo-app/api.env
+# DB 접속정보는 git에 없는 이 파일에만 있다. root만 읽을 수 있고, systemd가 읽어서 넘겨 준다.
+EnvironmentFile=/opt/todo-app/.env
 ExecStart=/usr/bin/node src/server.js
 Restart=always
 RestartSec=3

@@ -1,15 +1,15 @@
 // 세 티어를 함께 실행한다: PostgreSQL → API → Next.js. Ctrl+C를 누르면 모두 종료된다.
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadEnvFile, missingDbEnv } from "./env.mjs";
 import { createPostgres } from "./postgres.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV_FILE = process.env.ENV_FILE ?? join(ROOT, ".env");
 const DATA_DIR = process.env.PGDATA_DIR ?? join(ROOT, "db", "pgdata");
-const REQUIRED_DB_ENV = ["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"];
 
 const children = new Map();
 let startedPostgres = false;
@@ -50,10 +50,9 @@ async function shutdown(code) {
 }
 
 function main() {
-  // 이미 설정된 환경 변수는 덮어쓰지 않는다.
-  if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+  loadEnvFile(ENV_FILE);
 
-  const missing = REQUIRED_DB_ENV.filter((name) => !process.env[name]);
+  const missing = missingDbEnv();
   if (missing.length > 0) {
     throw new Error(
       `환경 변수가 없습니다: ${missing.join(", ")}\n` +

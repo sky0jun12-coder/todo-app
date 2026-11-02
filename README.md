@@ -19,7 +19,7 @@ DB 티어   db/   PostgreSQL         접속정보는 환경 변수로 지정
 
 ## 준비
 
-Node.js 22 이상과 PostgreSQL 18이 필요합니다.
+Node.js 18.18 이상과 PostgreSQL이 필요합니다. 로컬 실행 시 `scripts/postgres.mjs`는 Homebrew의 PostgreSQL 18을 먼저 찾습니다.
 
 ```sh
 brew install node postgresql@18
@@ -84,6 +84,28 @@ Next.js 개발 서버는 폴더당 하나만 뜰 수 있으므로, 앱을 끈 �
 - 할 일 제목: 앞뒤 공백을 제거한 뒤 1~200자
 - 배운 것: 앞뒤 공백을 제거한 뒤 1~500자
 - 노트: 0~10,000자, 공백과 줄바꿈은 입력한 그대로 저장
+
+## VM 배포 (Ubuntu)
+
+`apt`의 PostgreSQL, Nginx, Node.js를 VM에서 직접 실행합니다. 재부팅해도 세 서비스 모두 자동으로 시작됩니다.
+
+| 티어 | 실행 방식 | 주소 |
+| --- | --- | --- |
+| 웹 | Next.js 정적 빌드(`web/out`)를 Nginx가 제공, `/api/*`는 API로 전달 | `127.0.0.1:8088` |
+| API | systemd 서비스 `todo-api` (`deploy/todo-api.service`) | `127.0.0.1:4000` |
+| DB | apt의 PostgreSQL 서비스 | `127.0.0.1:5432` |
+
+- DB 접속정보는 `/opt/todo-app/.env`에 있으며, git에 올라가지 않고 root만 읽을 수 있습니다.
+- 모두 VM 내부에서만 받습니다. VS Code Remote-SSH의 Ports 탭에서 `8088`을 전달해 접속합니다.
+
+코드를 갱신할 때:
+
+```sh
+cd /opt/todo-app && git pull && npm ci && npm run build:static
+sudo node scripts/migrate.mjs
+sudo rsync -a --delete web/out/ /var/www/todo-app/
+sudo systemctl restart todo-api
+```
 
 ## DB 스키마 변경
 
