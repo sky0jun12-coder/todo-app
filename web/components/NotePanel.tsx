@@ -15,6 +15,7 @@ export function NotePanel() {
   const latestValue = useRef("");
   const dirty = useRef(false);
   const saving = useRef(false);
+  const inflight = useRef<Promise<void> | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
@@ -48,11 +49,16 @@ export function NotePanel() {
         keepalive: true,
       }).catch(() => {});
     };
+    // 로그아웃은 진행 중인 저장이 끝난 뒤에 해야 한다. 세션이 먼저 지워지면 저장이 거절된다.
+    const flushBeforeLogout = async () => {
+      while (inflight.current) await inflight.current;
+      await flush();
+    };
     window.addEventListener("pagehide", flush);
-    beforeLogout.add(flush);
+    beforeLogout.add(flushBeforeLogout);
     return () => {
       window.removeEventListener("pagehide", flush);
-      beforeLogout.delete(flush);
+      beforeLogout.delete(flushBeforeLogout);
       clearTimeout(timer.current);
     };
   }, []);
@@ -65,7 +71,16 @@ export function NotePanel() {
     saving.current = true;
     setStatus({ message: "저장 중…", failed: false });
     try {
-      await api("/api/note", "PUT", { content: latestValue.current });
+      const request = api("/api/note", "PUT", { content: latestValue.current });
+      const settled = request.then(
+        () => {},
+        () => {},
+      );
+      inflight.current = settled;
+      settled.then(() => {
+        if (inflight.current === settled) inflight.current = null;
+      });
+      await request;
       if (!dirty.current) setStatus({ message: "저장됨", failed: false });
     } catch (error) {
       dirty.current = true;

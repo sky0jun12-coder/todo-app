@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: todo-app
+spec:
+  clusterIP: None
+  selector:
+    app: db
+  ports:
+    - name: postgres
+      port: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  namespace: todo-app
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: postgres
+          image: postgres:18-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: DB_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: DB_NAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+          volumeMounts:
+            # PostgreSQL 18 이미지는 이 경로 아래 버전별 폴더에 데이터를 저장한다.
+            - name: data
+              mountPath: /var/lib/postgresql
+          startupProbe:
+            exec:
+              command: ["sh", "-c", 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"']
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 24
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"']
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"']
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
