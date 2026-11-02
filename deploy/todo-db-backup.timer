@@ -1,0 +1,11 @@
+[Unit]
+Description=Todo 앱 DB 매일 백업
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+# VM이 꺼져 있어 놓쳤다면 켜진 뒤 바로 실행한다.
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target

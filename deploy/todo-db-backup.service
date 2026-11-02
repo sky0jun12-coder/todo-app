@@ -1,0 +1,8 @@
+[Unit]
+Description=Todo 앱 DB 백업 (kind todo-app)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/todo-db-backup
